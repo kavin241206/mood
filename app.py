@@ -37,7 +37,7 @@ if img_base64:
             content: "";
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.45); /* Darkened so white text is readable */
+            background-color: rgba(0, 0, 0, 0.45);
             backdrop-filter: blur(3px);
             z-index: -1;
         }}
@@ -76,14 +76,24 @@ if img_base64:
         
         /* Make the Send Updates button green */
         div[data-testid="stButton"] button {{
-            background-color: #4CAF50 !important; /* Aesthetic vibrant green */
+            background-color: #4CAF50 !important;
             color: white !important;
             border: none !important;
             font-weight: bold !important;
         }}
         div[data-testid="stButton"] button:hover {{
-            background-color: #45a049 !important; /* Darker green when hovering */
+            background-color: #45a049 !important;
             color: white !important;
+        }}
+        
+        /* Make the big love metric pop */
+        .love-metric {{
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ff4b4b;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            margin: 10px 0px;
         }}
         </style>
         """,
@@ -101,14 +111,16 @@ def load_data():
     try:
         return conn.read(ttl=0)
     except Exception:
-        return pd.DataFrame(columns=["Timestamp", "Mood", "Miss You Scale", "Notes"])
+        # Added Love Counter to the fallback columns
+        return pd.DataFrame(columns=["Timestamp", "Mood", "Miss You Scale", "Love Counter", "Notes"])
 
-def save_data(mood, miss_scale, notes):
+def save_data(mood, miss_scale, love_scale, notes):
     df = load_data()
     new_entry = {
         "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "Mood": mood,
         "Miss You Scale": miss_scale,
+        "Love Counter": love_scale,
         "Notes": notes
     }
     if df.empty or df.dropna(how='all').empty:
@@ -137,12 +149,17 @@ with tab1:
     miss_scale = st.slider("How much do you miss me today? (1 to 100)", min_value=1, max_value=100, value=75)
     
     st.markdown("---")
+    st.markdown("#### The Love Meter 💘")
+    # The Crazy Love Counter!
+    love_scale = st.slider("Scale limit broken! How much do you love me?", min_value=1, max_value=3000, value=3000, step=10, help="I love you 3000! 🤖❤️")
+    
+    st.markdown("---")
     extra_notes = st.text_area("Anything else you want to tell me?", placeholder="Type a sweet note, a secret, or how your day went...")
     
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("Send Updates ❤️", use_container_width=True):
         with st.spinner("Sending love to our sheet..."):
-            save_data(selected_mood, miss_scale, extra_notes)
+            save_data(selected_mood, miss_scale, love_scale, extra_notes)
         st.balloons()
         st.success("Sent! Go check the 'For You' tab to see it updated!")
 
@@ -157,6 +174,7 @@ with tab2:
     else:
         latest = data.iloc[-1]
         
+        # Top Row: Mood and Miss Scale
         col1, col2 = st.columns(2)
         with col1:
             mood_val = str(latest["Mood"]).split(" ")[1] if " " in str(latest["Mood"]) else str(latest["Mood"])
@@ -164,6 +182,14 @@ with tab2:
             st.caption(f"Full status: {latest['Mood']}")
         with col2:
             st.metric(label="Misses You Scale", value=f"{int(latest['Miss You Scale'])} / 100")
+        
+        st.markdown("---")
+        
+        # Bottom Row: The Big Love Counter
+        st.markdown("<h4 style='text-align: center; color: white;'>Love Level Detected:</h4>", unsafe_allow_html=True)
+        # Safely grab the love counter, default to 3000 if it's an older row without data
+        current_love = int(latest.get("Love Counter", 3000)) if pd.notna(latest.get("Love Counter")) else 3000
+        st.markdown(f"<div class='love-metric'>🚀 {current_love} / 3000 ❤️</div>", unsafe_allow_html=True)
             
         if pd.notna(latest["Notes"]) and str(latest["Notes"]).strip() != "" and str(latest["Notes"]) != "nan":
             st.markdown("<br>", unsafe_allow_html=True)
