@@ -73,6 +73,18 @@ if img_base64:
         [data-testid="stMetricValue"] {{
             color: #ffffff !important;
         }}
+        
+        /* Make the Send Updates button green */
+        div[data-testid="stButton"] button {{
+            background-color: #4CAF50 !important; /* Aesthetic vibrant green */
+            color: white !important;
+            border: none !important;
+            font-weight: bold !important;
+        }}
+        div[data-testid="stButton"] button:hover {{
+            background-color: #45a049 !important; /* Darker green when hovering */
+            color: white !important;
+        }}
         </style>
         """,
         unsafe_allow_html=True
