@@ -15,8 +15,8 @@ def get_base64_image(image_path):
             return base64.b64encode(img_file.read()).decode()
     return None
 
-# Matches your exact new file name from GitHub
-IMG_FILENAME = "background.jpg.png" 
+# Matches your original selfie file name from GitHub
+IMG_FILENAME = "background.jpg.jpeg" 
 img_base64 = get_base64_image(IMG_FILENAME)
 
 # 3. Inject Custom CSS for Background and Cute Theme Styling
@@ -26,39 +26,36 @@ if img_base64:
         <style>
         /* Main background image setup */
         .stApp {{
-            background-image: url("data:image/png;base64,{img_base64}");
+            background-image: url("data:image/jpg;base64,{img_base64}");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            color: #1a1a1a; /* Dark gray for all standard text to ensure readability */
         }}
         
-        /* Semi-transparent overlay - lightened up so your white collage shines through */
+        /* Semi-transparent overlay to ensure text is perfectly readable against the selfie */
         .stApp::before {{
             content: "";
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(255, 240, 245, 0.3); /* Very soft pink overlay */
-            backdrop-filter: blur(2px); /* Slightly less blur so the photos are recognizable */
+            background-color: rgba(255, 240, 245, 0.65); /* Soft pinkish tint overlay */
+            backdrop-filter: blur(3px); /* Softly blurs the background photo slightly */
             z-index: -1;
         }}
         
         /* Custom styling for containers to look like cute floating cards */
         .cute-card {{
-            background: rgba(255, 255, 255, 0.90); /* More opaque white card for contrast */
+            background: rgba(255, 255, 255, 0.85);
             padding: 25px;
             border-radius: 20px;
-            box-shadow: 0 8px 24px rgba(251, 111, 146, 0.2);
+            box-shadow: 0 8px 24px rgba(251, 111, 146, 0.15);
             border: 2px solid #ffb6c1;
             margin-bottom: 20px;
-            color: #333333;
         }}
         
-        /* Make headers look soft but dark enough to read on white */
-        h1, h2, h3, h4 {{
-            color: #831843 !important; /* Deep ruby/dark pink */
+        /* Make headers look soft and elegant */
+        h1, h2, h3 {{
+            color: #d63384 !important;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-weight: 700;
         }}
         
         /* Style the tabs */
@@ -66,28 +63,18 @@ if img_base64:
             gap: 10px;
         }}
         .stTabs [data-baseweb="tab"] {{
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(255, 255, 255, 0.7);
             border-radius: 10px 10px 0px 0px;
             padding: 10px 20px;
-            color: #831843;
-            font-weight: 600;
-        }}
-        
-        /* Make Streamlit metrics (the big numbers) darker */
-        [data-testid="stMetricValue"] {{
-            color: #831843;
-        }}
-        [data-testid="stMetricLabel"] {{
-            color: #4a4a4a;
-            font-weight: bold;
+            color: #d63384;
         }}
         </style>
         """,
         unsafe_allow_html=True
     )
 else:
-    # Fallback cozy color scheme
-    st.markdown("<style>.stApp {background-color: #fff0f5; color: #333;}</style>", unsafe_allow_html=True)
+    # Fallback cozy color scheme if image isn't found/loaded yet
+    st.markdown("<style>.stApp {background-color: #fff0f5;}</style>", unsafe_allow_html=True)
 
 
 # 4. Establish connection to Google Sheets
@@ -117,8 +104,7 @@ def save_data(mood, miss_scale, notes):
 # --- APP INTERFACE ---
 
 st.markdown("<h1 style='text-align: center;'>💖 Our Daily Connection Hub 💖</h1>", unsafe_allow_html=True)
-# Darkened the subheader color for better readability
-st.markdown("<div style='text-align: center; margin-bottom: 25px; color: #9d174d; font-weight: bold; font-size: 1.1em;'>✨ Keeping us close, no matter the distance ✨</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; margin-bottom: 25px; color: #e91e63;'>✨ Keeping us close, no matter the distance ✨</div>", unsafe_allow_html=True)
 
 tab1, tab2 = st.tabs(["✨ For Her", "📊 For You"])
 
@@ -171,7 +157,7 @@ with tab2:
             st.markdown("#### 💌 Message for you:")
             st.info(latest["Notes"])
             
-        st.markdown(f"<div style='text-align: right; color: #555555; font-size: 0.8rem; margin-top: 15px;'>Last updated: {latest['Timestamp']}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='text-align: right; color: gray; font-size: 0.8rem; margin-top: 15px;'>Last updated: {latest['Timestamp']}</div>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     # Past Log Dropdown
