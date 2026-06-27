@@ -86,14 +86,40 @@ if img_base64:
             color: white !important;
         }}
         
-        /* Make the big love metric pop */
-        .love-metric {{
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #ff4b4b;
+        /* CRAZY LOVE BAR CSS */
+        .love-container {{
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 25px;
+            padding: 5px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+            margin: 20px 0px;
+        }}
+        .love-bar {{
+            height: 45px;
+            background: linear-gradient(90deg, #ff1493, #ff69b4, #ff1493);
+            background-size: 200% 200%;
+            border-radius: 20px;
             text-align: center;
+            line-height: 45px;
+            color: white;
+            font-weight: 900;
+            font-size: 1.3rem;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-            margin: 10px 0px;
+            animation: pulse-glow 2s infinite, moving-gradient 3s infinite linear;
+            white-space: nowrap;
+            overflow: hidden;
+        }}
+        
+        /* Keyframe animations for the glowing and moving effects */
+        @keyframes pulse-glow {{
+            0% {{ box-shadow: 0 0 10px #ff1493; }}
+            50% {{ box-shadow: 0 0 25px #ff1493, 0 0 40px #ff69b4; }}
+            100% {{ box-shadow: 0 0 10px #ff1493; }}
+        }}
+        @keyframes moving-gradient {{
+            0% {{ background-position: 100% 50%; }}
+            100% {{ background-position: 0% 50%; }}
         }}
         </style>
         """,
@@ -111,7 +137,7 @@ def load_data():
     try:
         return conn.read(ttl=0)
     except Exception:
-        # Added Love Counter to the fallback columns
+        # Love Counter included
         return pd.DataFrame(columns=["Timestamp", "Mood", "Miss You Scale", "Love Counter", "Notes"])
 
 def save_data(mood, miss_scale, love_scale, notes):
@@ -150,7 +176,6 @@ with tab1:
     
     st.markdown("---")
     st.markdown("#### The Love Meter 💘")
-    # The Crazy Love Counter!
     love_scale = st.slider("Scale limit broken! How much do you love me?", min_value=1, max_value=3000, value=3000, step=10, help="I love you 3000! 🤖❤️")
     
     st.markdown("---")
@@ -185,11 +210,22 @@ with tab2:
         
         st.markdown("---")
         
-        # Bottom Row: The Big Love Counter
-        st.markdown("<h4 style='text-align: center; color: white;'>Love Level Detected:</h4>", unsafe_allow_html=True)
-        # Safely grab the love counter, default to 3000 if it's an older row without data
+        # Bottom Row: THE GLOWING LOVE BAR
+        st.markdown("<h4 style='text-align: center;'>Love Power Level Detected:</h4>", unsafe_allow_html=True)
+        
+        # Extract the love value and calculate the percentage to fill the bar
         current_love = int(latest.get("Love Counter", 3000)) if pd.notna(latest.get("Love Counter")) else 3000
-        st.markdown(f"<div class='love-metric'>🚀 {current_love} / 3000 ❤️</div>", unsafe_allow_html=True)
+        percentage = min(100, max(5, int((current_love / 3000) * 100))) # Ensures bar is at least 5% visible
+        
+        # Inject the custom HTML for the animated bar
+        love_bar_html = f"""
+        <div class="love-container">
+            <div class="love-bar" style="width: {percentage}%;">
+                🚀 {current_love} / 3000
+            </div>
+        </div>
+        """
+        st.markdown(love_bar_html, unsafe_allow_html=True)
             
         if pd.notna(latest["Notes"]) and str(latest["Notes"]).strip() != "" and str(latest["Notes"]) != "nan":
             st.markdown("<br>", unsafe_allow_html=True)
