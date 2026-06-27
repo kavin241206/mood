@@ -103,14 +103,14 @@ def save_data(mood, miss_scale, notes):
 
 # --- APP INTERFACE ---
 
-st.markdown("<h1 style='text-align: center;'>💖 Our Daily Connection Hub 💖</h1>", unsafe_with_html=True)
-st.markdown("<div style='text-align: center; margin-bottom: 25px; color: #e91e63;'>✨ Keeping us close, no matter the distance ✨</div>", unsafe_with_html=True)
+st.markdown("<h1 style='text-align: center;'>💖 Our Daily Connection Hub 💖</h1>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; margin-bottom: 25px; color: #e91e63;'>✨ Keeping us close, no matter the distance ✨</div>", unsafe_allow_html=True)
 
 tab1, tab2 = st.tabs(["✨ For Her", "📊 For You"])
 
 # --- TAB 1: HER INPUT ---
 with tab1:
-    st.markdown('<div class="cute-card">', unsafe_with_html=True)
+    st.markdown('<div class="cute-card">', unsafe_allow_html=True)
     st.markdown("### Hey beautiful, how are you doing today? 🥰")
     
     mood_options = ["😊 Happy / Excited", "😴 Tired / Lazy", "😔 A bit low", "😡 Annoyed / Stressed", "🥰 Loved / Cozy"]
@@ -123,18 +123,18 @@ with tab1:
     st.markdown("---")
     extra_notes = st.text_area("Anything else you want to tell me?", placeholder="Type a sweet note, a secret, or how your day went...")
     
-    st.markdown("<br>", unsafe_with_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
     if st.button("Send Updates ❤️", use_container_width=True):
         with st.spinner("Sending love to our sheet..."):
             save_data(selected_mood, miss_scale, extra_notes)
         st.balloons()
         st.success("Sent! Go check the 'For You' tab to see it updated!")
-    st.markdown('</div>', unsafe_with_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 
 # --- TAB 2: YOUR VIEW ---
 with tab2:
-    st.markdown('<div class="cute-card">', unsafe_with_html=True)
+    st.markdown('<div class="cute-card">', unsafe_allow_html=True)
     st.markdown("### How she's doing today 💭")
     
     data = load_data().dropna(how='all')
@@ -153,12 +153,12 @@ with tab2:
             st.metric(label="Misses You Scale", value=f"{int(latest['Miss You Scale'])} / 100")
             
         if pd.notna(latest["Notes"]) and str(latest["Notes"]).strip() != "" and str(latest["Notes"]) != "nan":
-            st.markdown("<br>", unsafe_with_html=True)
+            st.markdown("<br>", unsafe_allow_html=True)
             st.markdown("#### 💌 Message for you:")
             st.info(latest["Notes"])
             
-        st.markdown(f"<div style='text-align: right; color: gray; font-size: 0.8rem; margin-top: 15px;'>Last updated: {latest['Timestamp']}</div>", unsafe_with_html=True)
-    st.markdown('</div>', unsafe_with_html=True)
+        st.markdown(f"<div style='text-align: right; color: gray; font-size: 0.8rem; margin-top: 15px;'>Last updated: {latest['Timestamp']}</div>", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
     # Past Log Dropdown
     if not data.empty:
