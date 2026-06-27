@@ -8,6 +8,10 @@ import os
 # 1. Set page config
 st.set_page_config(page_title="Our Little Space ❤️", page_icon="🥰", layout="centered")
 
+# --- INITIALIZE SESSION STATE FOR FRONT PAGE ---
+if 'unlocked' not in st.session_state:
+    st.session_state.unlocked = False
+
 # 2. Function to safely encode local image for CSS background
 def get_base64_image(image_path):
     if os.path.exists(image_path):
@@ -74,12 +78,13 @@ if img_base64:
             color: #ffffff !important;
         }}
         
-        /* Make the Send Updates button green */
+        /* Make the buttons green */
         div[data-testid="stButton"] button {{
             background-color: #4CAF50 !important;
             color: white !important;
             border: none !important;
             font-weight: bold !important;
+            padding: 15px 30px !important;
         }}
         div[data-testid="stButton"] button:hover {{
             background-color: #45a049 !important;
@@ -111,7 +116,6 @@ if img_base64:
             overflow: hidden;
         }}
         
-        /* Keyframe animations for the glowing and moving effects */
         @keyframes pulse-glow {{
             0% {{ box-shadow: 0 0 10px #ff1493; }}
             50% {{ box-shadow: 0 0 25px #ff1493, 0 0 40px #ff69b4; }}
@@ -137,7 +141,6 @@ def load_data():
     try:
         return conn.read(ttl=0)
     except Exception:
-        # Love Counter included
         return pd.DataFrame(columns=["Timestamp", "Mood", "Miss You Scale", "Love Counter", "Notes"])
 
 def save_data(mood, miss_scale, love_scale, notes):
@@ -156,85 +159,104 @@ def save_data(mood, miss_scale, love_scale, notes):
     conn.update(data=df)
 
 
-# --- APP INTERFACE ---
+# ==========================================
+# --- APP INTERFACE ROUTING ---
+# ==========================================
 
-st.markdown("<h1 style='text-align: center;'>💖 Our Daily Connection Hub 💖</h1>", unsafe_allow_html=True)
-st.markdown("<div style='text-align: center; margin-bottom: 25px; color: #ff9fb6; font-weight: bold;'>✨ Keeping us close, no matter the distance ✨</div>", unsafe_allow_html=True)
+if not st.session_state.unlocked:
+    # --- THE FRONT PAGE ---
+    # Add some spacing to push everything to the middle of the screen
+    st.markdown("<br><br><br><br><br>", unsafe_allow_html=True)
+    
+    st.markdown("<h1 style='text-align: center; font-size: 3.5rem;'>Hello Beautiful ✨</h1>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; color: #e0e0e0; font-weight: normal; margin-bottom: 40px;'>Are you ready to enter our little space?</h3>", unsafe_allow_html=True)
+    
+    # Center the button using columns
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if st.button("Yes, take me there! ❤️", use_container_width=True):
+            st.session_state.unlocked = True
+            st.rerun() # This instantly refreshes the page to show the main app
 
-tab1, tab2 = st.tabs(["✨ For Her", "📊 For You"])
+else:
+    # --- THE MAIN APP (Only shows if unlocked = True) ---
+    st.markdown("<h1 style='text-align: center;'>💖 Our Daily Connection Hub 💖</h1>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align: center; margin-bottom: 25px; color: #ff9fb6; font-weight: bold;'>✨ Keeping us close, no matter the distance ✨</div>", unsafe_allow_html=True)
 
-# --- TAB 1: HER INPUT ---
-with tab1:
-    st.markdown("### Hey beautiful, how are you doing today? 🥰")
-    
-    mood_options = ["😊 Happy / Excited", "😴 Tired / Lazy", "😔 A bit low", "😡 Annoyed / Stressed", "🥰 Loved / Cozy"]
-    selected_mood = st.selectbox("How is your mood today?", mood_options)
-    
-    st.markdown("---")
-    st.markdown("#### Distance Check 🌸")
-    miss_scale = st.slider("How much do you miss me today? (1 to 100)", min_value=1, max_value=100, value=75)
-    
-    st.markdown("---")
-    st.markdown("#### The Love Meter 💘")
-    love_scale = st.slider("Scale limit broken! How much do you love me?", min_value=1, max_value=3000, value=3000, step=10, help="I love you 3000! 🤖❤️")
-    
-    st.markdown("---")
-    extra_notes = st.text_area("Anything else you want to tell me?", placeholder="Type a sweet note, a secret, or how your day went...")
-    
-    st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("Send Updates ❤️", use_container_width=True):
-        with st.spinner("Sending love to our sheet..."):
-            save_data(selected_mood, miss_scale, love_scale, extra_notes)
-        st.balloons()
-        st.success("Sent! Go check the 'For You' tab to see it updated!")
+    tab1, tab2 = st.tabs(["✨ For Her", "📊 For You"])
 
-# --- TAB 2: YOUR VIEW ---
-with tab2:
-    st.markdown("### How she's doing today 💭")
-    
-    data = load_data().dropna(how='all')
-    
-    if data.empty:
-        st.info("No updates yet today. Check back later, handsome!")
-    else:
-        latest = data.iloc[-1]
+    # --- TAB 1: HER INPUT ---
+    with tab1:
+        st.markdown("### How are you doing today? 🥰")
         
-        # Top Row: Mood and Miss Scale
-        col1, col2 = st.columns(2)
-        with col1:
-            mood_val = str(latest["Mood"]).split(" ")[1] if " " in str(latest["Mood"]) else str(latest["Mood"])
-            st.metric(label="Current Mood Status", value=mood_val)
-            st.caption(f"Full status: {latest['Mood']}")
-        with col2:
-            st.metric(label="Misses You Scale", value=f"{int(latest['Miss You Scale'])} / 100")
+        mood_options = ["😊 Happy / Excited", "😴 Tired / Lazy", "😔 A bit low", "😡 Annoyed / Stressed", "🥰 Loved / Cozy"]
+        selected_mood = st.selectbox("How is your mood today?", mood_options)
         
         st.markdown("---")
+        st.markdown("#### Distance Check 🌸")
+        miss_scale = st.slider("How much do you miss me today? (1 to 100)", min_value=1, max_value=100, value=75)
         
-        # Bottom Row: THE GLOWING LOVE BAR
-        st.markdown("<h4 style='text-align: center;'>Love Power Level Detected:</h4>", unsafe_allow_html=True)
+        st.markdown("---")
+        st.markdown("#### The Love Meter 💘")
+        love_scale = st.slider("Scale limit broken! How much do you love me?", min_value=1, max_value=3000, value=3000, step=10, help="I love you 3000! 🤖❤️")
         
-        # Extract the love value and calculate the percentage to fill the bar
-        current_love = int(latest.get("Love Counter", 3000)) if pd.notna(latest.get("Love Counter")) else 3000
-        percentage = min(100, max(5, int((current_love / 3000) * 100))) # Ensures bar is at least 5% visible
+        st.markdown("---")
+        extra_notes = st.text_area("Anything else you want to tell me?", placeholder="Type a sweet note, a secret, or how your day went...")
         
-        # Inject the custom HTML for the animated bar
-        love_bar_html = f"""
-        <div class="love-container">
-            <div class="love-bar" style="width: {percentage}%;">
-                🚀 {current_love} / 3000
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("Send Updates ❤️", use_container_width=True):
+            with st.spinner("Sending love to our sheet..."):
+                save_data(selected_mood, miss_scale, love_scale, extra_notes)
+            st.balloons()
+            st.success("Sent! Go check the 'For You' tab to see it updated!")
+
+    # --- TAB 2: YOUR VIEW ---
+    with tab2:
+        st.markdown("### How she's doing today 💭")
+        
+        data = load_data().dropna(how='all')
+        
+        if data.empty:
+            st.info("No updates yet today. Check back later, handsome!")
+        else:
+            latest = data.iloc[-1]
+            
+            # Top Row: Mood and Miss Scale
+            col1, col2 = st.columns(2)
+            with col1:
+                mood_val = str(latest["Mood"]).split(" ")[1] if " " in str(latest["Mood"]) else str(latest["Mood"])
+                st.metric(label="Current Mood Status", value=mood_val)
+                st.caption(f"Full status: {latest['Mood']}")
+            with col2:
+                st.metric(label="Misses You Scale", value=f"{int(latest['Miss You Scale'])} / 100")
+            
+            st.markdown("---")
+            
+            # Bottom Row: THE GLOWING LOVE BAR
+            st.markdown("<h4 style='text-align: center;'>Love Power Level Detected:</h4>", unsafe_allow_html=True)
+            
+            # Extract the love value and calculate the percentage to fill the bar
+            current_love = int(latest.get("Love Counter", 3000)) if pd.notna(latest.get("Love Counter")) else 3000
+            percentage = min(100, max(5, int((current_love / 3000) * 100)))
+            
+            # Inject the custom HTML for the animated bar
+            love_bar_html = f"""
+            <div class="love-container">
+                <div class="love-bar" style="width: {percentage}%;">
+                    🚀 {current_love} / 3000
+                </div>
             </div>
-        </div>
-        """
-        st.markdown(love_bar_html, unsafe_allow_html=True)
+            """
+            st.markdown(love_bar_html, unsafe_allow_html=True)
+                
+            if pd.notna(latest["Notes"]) and str(latest["Notes"]).strip() != "" and str(latest["Notes"]) != "nan":
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown("#### 💌 Message for you:")
+                st.info(latest["Notes"])
+                
+            st.markdown(f"<div style='text-align: right; color: #e0e0e0; font-size: 0.8rem; margin-top: 15px;'>Last updated: {latest['Timestamp']}</div>", unsafe_allow_html=True)
             
-        if pd.notna(latest["Notes"]) and str(latest["Notes"]).strip() != "" and str(latest["Notes"]) != "nan":
-            st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown("#### 💌 Message for you:")
-            st.info(latest["Notes"])
-            
-        st.markdown(f"<div style='text-align: right; color: #e0e0e0; font-size: 0.8rem; margin-top: 15px;'>Last updated: {latest['Timestamp']}</div>", unsafe_allow_html=True)
-        
-    # Past Log Dropdown
-    if not data.empty:
-        with st.expander("📜 Walk Down Memory Lane (Past Logs)"):
-            st.dataframe(data.sort_values(by="Timestamp", ascending=False), use_container_width=True)
+        # Past Log Dropdown
+        if not data.empty:
+            with st.expander("📜 Walk Down Memory Lane (Past Logs)"):
+                st.dataframe(data.sort_values(by="Timestamp", ascending=False), use_container_width=True)
