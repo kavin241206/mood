@@ -15,7 +15,7 @@ def get_base64_image(image_path):
             return base64.b64encode(img_file.read()).decode()
     return None
 
-# Look for the uploaded image (Make sure it's named exactly this or update the string)
+# Matches your file name exactly from GitHub
 IMG_FILENAME = "background.jpg.jpeg" 
 img_base64 = get_base64_image(IMG_FILENAME)
 
@@ -70,11 +70,11 @@ if img_base64:
         }}
         </style>
         """,
-        unsafe_with_html=True
+        unsafe_allow_html=True
     )
 else:
     # Fallback cozy color scheme if image isn't found/loaded yet
-    st.markdown("<style>.stApp {background-color: #fff0f5;}</style>", unsafe_with_html=True)
+    st.markdown("<style>.stApp {background-color: #fff0f5;}</style>", unsafe_allow_html=True)
 
 
 # 4. Establish connection to Google Sheets
