@@ -16,7 +16,7 @@ def get_base64_image(image_path):
     return None
 
 # Look for the uploaded image (Make sure it's named exactly this or update the string)
-IMG_FILENAME = "background.jpg" 
+IMG_FILENAME = "background.jpg.jpeg" 
 img_base64 = get_base64_image(IMG_FILENAME)
 
 # 3. Inject Custom CSS for Background and Cute Theme Styling
